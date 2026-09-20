@@ -5,11 +5,17 @@ const cors = require('cors')
 const helmet = require('helmet')
 const limiter = require('express-rate-limit')
 const {setServers} = require("dns/promises")
+const globalError = require('./middlewares/globalError')
+const authRouter = require("./Features/auth/auth.route")
 setServers(['8.8.8.8','8.8.4.4'])
 
 const app = express()
 app.set("query parser" , "extended")
 
+const appLimiter = limiter.rateLimit({
+    limit : 100 ,
+    windowMs : 15 * 60 * 1000
+})
 
 app.use(express.json())
 app.use(cors({
@@ -17,14 +23,7 @@ app.use(cors({
 }))
 app.use(morgan("dev"))
 app.use(helmet())
-
-const appLimiter = limiter.rateLimit({
-    limit : 100 ,
-    windowMs : 15 * 60 * 1000
-})
-
 app.use(appLimiter)
-
 
 app.get("/" , (req,res) => {
     res.status(200).json({
@@ -33,8 +32,7 @@ app.get("/" , (req,res) => {
     })
 })
 
-
-
+app.use('/auth',authRouter)
 
 app.use((req,res) => {
     res.status(404).json({
@@ -43,8 +41,6 @@ app.use((req,res) => {
     })
 })
 
-
-
-
+app.use(globalError)
 
 module.exports = app
