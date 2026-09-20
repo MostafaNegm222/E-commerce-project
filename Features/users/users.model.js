@@ -46,10 +46,12 @@ const userSchema = new mongoose.Schema({
         default : false ,
     },
     confirmOTP : {
-        type : String 
+        type : String ,
+        select : false
     },
     OTPExpired : {
-        type : Date
+        type : Date , 
+        select : false
     },
     isActive : {
         type : Boolean ,

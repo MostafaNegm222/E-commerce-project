@@ -15,14 +15,62 @@ class AuthService {
     }
 
     static async signup (data) {
-        console.log(data);
         const {email,name,password,phone=""} = data
-        const findUser = await this.findUser({email})
-        console.log(findUser);
-        if(findUser) throw new AppError(400,`This email is already exist, please try another email`)
+        const userExisting = await this.findUser({email})
+        if(userExisting) throw new AppError(`This email is already exist, please try another email`,400)
         const user  = await User.create({email,name,image,phone,password})
         sendEmail(user.email,'Confirm Email',user._plainOTP,user.name)
         return user
+    }
+
+    static async confirmEmail(data) {
+        const {email,confirmOTP} = data;
+        if (!email || !confirmOTP) {
+            throw new AppError('Email and OTP are required', 400);
+        }
+        const userExisting = await User.findOne({ email }).select('+confirmOTP +OTPExpired');
+        if (!userExisting) {
+            throw new AppError("This user doesn't exist, please signup first!", 400);
+        }
+        if (userExisting.isConfirmed) {
+            throw new AppError('This user is already confirmed/active', 400);
+        }
+        if (!userExisting.OTPExpired || userExisting.OTPExpired < Date.now()) {
+            throw new AppError('OTP code has expired, please request a new one', 400);
+        }
+        const isOTPValid = await bcrypt.compare(confirmOTP, userExisting.confirmOTP);
+        if (!isOTPValid) {
+            throw new AppError('Invalid OTP code', 400);
+        }
+        userExisting.isConfirmed = true;
+        userExisting.confirmOTP = undefined;
+        userExisting.OTPExpired = undefined;
+        await userExisting.save();
+        return 'Email is confirmed successfully. Please login!';
+    }
+
+    static async resendOTP(data) {
+        const { email } = data;
+        if (!email) {
+            throw new AppError('Email is required', 400);
+        }
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new AppError("This user doesn't exist, please signup first!", 400);
+        }
+        if (user.isConfirmed) {
+            throw new AppError('This account is already confirmed and active', 400);
+        }
+        if (user.OTPExpired && (user.OTPExpired - Date.now() > 9 * 60 * 1000)) {
+        throw new AppError('Please wait a minute before requesting a new OTP', 400);
+        }
+        const newOTP = customAlphabet('0123456789', 6)();
+        const hashedOTP = await bcrypt.hash(newOTP, +process.env.SALT_ROUND || 10);
+        user.confirmOTP = hashedOTP;
+        user.OTPExpired = Date.now() + 10 * 60 * 1000;
+        await user.save();
+        await sendEmail(user.email, 'New Confirmation OTP', newOTP, user.name);
+        return 'A new OTP has been sent to your email!';
     }
 }
 

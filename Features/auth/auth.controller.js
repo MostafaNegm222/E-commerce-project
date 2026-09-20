@@ -7,7 +7,23 @@ exports.signup = catchAsync(async (req,res) => {
     const user = await AuthService.signup(req.body)
     res.status(201).json({
         success : true ,
-        message : 'User is created successfully',
+        message : 'User is created successfully, Please check your email',
         data : user
     })
 })
+
+exports.confirmEmail = catchAsync(async (req,res) => {
+    const message = await AuthService.confirmEmail(req.body)
+    res.status(200).json({
+        success : true ,
+        message
+    })
+})
+
+exports.resendOTP = catchAsync(async (req, res, next) => {
+    const message = await AuthService.resendOTP(req.body);
+    res.status(200).json({
+        success: true,
+        message
+    });
+});

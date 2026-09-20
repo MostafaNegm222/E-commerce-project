@@ -1,0 +1,14 @@
+language: "en-US"
+reviews:
+  profile: "chill" # أو "assertive" لمراجعات أكثر دقة وصارمة
+  request_tools:
+    - name: "ast-grep"
+      enabled: true
+  
+  instructions: |
+    - Check if the PR includes adequate unit/integration tests for any new features or bug fixes.
+    - If tests are missing, explicitly generate and suggest test cases using Jest or Supertest for Node.js.
+    - Review code for potential edge cases and security bugs.
+
+chat:
+  auto_reply: true
