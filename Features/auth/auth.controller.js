@@ -35,3 +35,11 @@ exports.login = catchAsync(async (req,res) => {
         token 
     })
 })
+
+exports.forgetPassword = catchAsync(async (req,res) => {
+    const message = await AuthService.forgetPassword(req.body)
+    res.status(200).json({
+        success : true ,
+        message
+    })
+})

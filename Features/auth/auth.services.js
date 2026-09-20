@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const crypto = require("crypto")
 const {customAlphabet} = require("nanoid")
 const {promisify} = require("util")
 const AppError = require("../../utils/AppError")
@@ -85,6 +86,19 @@ class AuthService {
         userExisting.lastSeen = new Date()
         await userExisting.save({validateBeforeSave : false})
         return token
+    }
+
+    static async forgetPassword (data) {
+        const {email} = data
+        const userExisting = await this.findUser({email})
+        if(!userExisting) throw new AppError(`This email isn't exist, please signup`)
+        const resetToken = await crypto.randomBytes(32).toString("hex") 
+        userExisting.resetToken = resetToken 
+        userExisting.resetTokenExpired = Date.now() + 10 * 60 * 1000
+        await userExisting.save({validateBeforeSave:false})
+        const link = `${process.env.FRONTEND_LINK ? process.env.FRONTEND_LINK : `http://localhost:3000`}/auth/reset-token/${resetToken}`
+        await sendEmail(email,"Reset Password",link,userExisting.name)
+        return `Reset link send to your email`
     }
 }
 
