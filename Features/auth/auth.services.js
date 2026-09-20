@@ -72,6 +72,20 @@ class AuthService {
         await sendEmail(user.email, 'New Confirmation OTP', newOTP, user.name);
         return 'A new OTP has been sent to your email!';
     }
+
+    static async login (data) {
+        const {email,password} = data 
+        const userExisting = await this.findUser({email}).select("+password")
+        if(!userExisting) throw new AppError(`Invalid Credential`,400)
+        if(!userExisting.isConfirmed) throw new AppError(`This email isn't active, Please confirm email first !`,400)
+        const check = await userExisting.comparePassword(password)
+        if(!check) throw new AppError(`Invalid Credential`,400)
+        const token = await jwtSign({_id:userExisting._id,role:userExisting.role},process.env.SECRET_KEY,{expiresIn:"7d"})
+        userExisting.isActive = true 
+        userExisting.lastSeen = new Date()
+        await userExisting.save({validateBeforeSave : false})
+        return token
+    }
 }
 
 

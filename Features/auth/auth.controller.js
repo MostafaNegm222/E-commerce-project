@@ -20,10 +20,18 @@ exports.confirmEmail = catchAsync(async (req,res) => {
     })
 })
 
-exports.resendOTP = catchAsync(async (req, res, next) => {
+exports.resendOTP = catchAsync(async (req,res) => {
     const message = await AuthService.resendOTP(req.body);
     res.status(200).json({
         success: true,
         message
     });
 });
+
+exports.login = catchAsync(async (req,res) => {
+    const token = await AuthService.login(req.body)
+    res.status(200).json({
+        success : true ,
+        token 
+    })
+})
