@@ -91,7 +91,7 @@ class AuthService {
     static async forgetPassword (data) {
         const {email} = data
         const userExisting = await this.findUser({email})
-        if(!userExisting) throw new AppError(`This email isn't exist, please signup`)
+        if(!userExisting) throw new AppError(`This email isn't exist, please signup`,400)
         const resetToken = await crypto.randomBytes(32).toString("hex") 
         userExisting.resetToken = resetToken 
         userExisting.resetTokenExpired = Date.now() + 10 * 60 * 1000
@@ -99,6 +99,17 @@ class AuthService {
         const link = `${process.env.FRONTEND_LINK ? process.env.FRONTEND_LINK : `http://localhost:3000`}/auth/reset-token/${resetToken}`
         await sendEmail(email,"Reset Password",link,userExisting.name)
         return `Reset link send to your email`
+    }
+
+    static async resetPassword (params,body) {
+        const {token} = params 
+        const {password} = body 
+        const userExisting = await this.findUser({resetToken:token})
+        if(!userExisting || userExisting.resetTokenExpired < Date.now()) throw new AppError(`This token is invalid or Expired`,400)
+        if(password.length == 6) throw new AppError(`Password must be 6 characters or more`,400)
+        userExisting.password = password 
+        await userExisting.save({validateBeforeSave:false})
+        return `Password reset successfully, Please login !`
     }
 }
 
