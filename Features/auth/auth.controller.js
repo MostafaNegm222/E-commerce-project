@@ -51,3 +51,11 @@ exports.resetPassword = catchAsync(async (req,res) => {
         message
     })
 })
+
+exports.logout = catchAsync(async (req,res) => {
+    const message = await AuthService.logout(req.body._id)
+    res.status(200).json({
+        success : true ,
+        message
+    })
+})
