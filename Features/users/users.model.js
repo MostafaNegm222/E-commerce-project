@@ -85,6 +85,10 @@ const userSchema = new mongoose.Schema({
     }
 })
 
+userSchema.methods.comparePassword = async function (data) {
+    return await bcrypt.compare(data,this.password)
+}
+
 userSchema.pre(/^find/, async function () {
   this.find({ isDeleted: { $ne: true } });
 });
