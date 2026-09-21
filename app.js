@@ -17,6 +17,11 @@ const appLimiter = limiter.rateLimit({
     windowMs : 15 * 60 * 1000
 })
 
+const authLimiter = limiter.rateLimit({
+    windowMs : 3 * 60 * 1000 ,
+    limit : 5
+})
+
 app.use(express.json())
 app.use(cors({
     origin : "*"
@@ -24,6 +29,7 @@ app.use(cors({
 app.use(morgan("dev"))
 app.use(helmet())
 app.use(appLimiter)
+app.use("/auth",authLimiter)
 
 app.get("/" , (req,res) => {
     res.status(200).json({
