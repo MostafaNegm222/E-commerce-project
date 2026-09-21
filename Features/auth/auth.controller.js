@@ -43,3 +43,19 @@ exports.forgetPassword = catchAsync(async (req,res) => {
         message
     })
 })
+
+exports.resetPassword = catchAsync(async (req,res) => {
+    const message = await AuthService.resetPassword(req.params,req.body)
+    res.status(200).json({
+        success : true ,
+        message
+    })
+})
+
+exports.logout = catchAsync(async (req,res) => {
+    const message = await AuthService.logout(req.body._id)
+    res.status(200).json({
+        success : true ,
+        message
+    })
+})

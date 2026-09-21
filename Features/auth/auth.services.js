@@ -31,7 +31,7 @@ class AuthService {
         }
         const userExisting = await User.findOne({ email }).select('+confirmOTP +OTPExpired');
         if (!userExisting) {
-            throw new AppError("This user doesn't exist, please signup first!", 400);
+            throw new AppError("This user doesn't exist, please signup first!", 404);
         }
         if (userExisting.isConfirmed) {
             throw new AppError('This user is already confirmed/active', 400);
@@ -57,7 +57,7 @@ class AuthService {
         }
         const user = await User.findOne({ email });
         if (!user) {
-            throw new AppError("This user doesn't exist, please signup first!", 400);
+            throw new AppError("This user doesn't exist, please signup first!", 404);
         }
         if (user.isConfirmed) {
             throw new AppError('This account is already confirmed and active', 400);
@@ -91,14 +91,36 @@ class AuthService {
     static async forgetPassword (data) {
         const {email} = data
         const userExisting = await this.findUser({email})
-        if(!userExisting) throw new AppError(`This email isn't exist, please signup`)
+        if(!userExisting) throw new AppError(`This email isn't exist, please signup`,404)
         const resetToken = await crypto.randomBytes(32).toString("hex") 
         userExisting.resetToken = resetToken 
         userExisting.resetTokenExpired = Date.now() + 10 * 60 * 1000
         await userExisting.save({validateBeforeSave:false})
-        const link = `${process.env.FRONTEND_LINK ? process.env.FRONTEND_LINK : `http://localhost:3000`}/auth/reset-token/${resetToken}`
+        const link = `${process.env.FRONTEND_LINK ? process.env.FRONTEND_LINK : `http://localhost:3000`}/auth/reset-password/${resetToken}`
         await sendEmail(email,"Reset Password",link,userExisting.name)
         return `Reset link send to your email`
+    }
+
+    static async resetPassword (params,body) {
+        const {token} = params 
+        const {password} = body 
+        const userExisting = await this.findUser({resetToken:token})
+        if(!userExisting || userExisting.resetTokenExpired < Date.now()) throw new AppError(`This token is invalid or Expired`,400)
+        if(password.length == 6) throw new AppError(`Password must be 6 characters or more`,400)
+        userExisting.password = password 
+        userExisting.resetToken = undefined 
+        userExisting.resetTokenExpired = undefined
+        await userExisting.save({validateBeforeSave:false})
+        return `Password reset successfully, Please login !`
+    }
+
+    static async logout (userId) {
+        const user = await this.findUser({_id:userId})
+        if(!user) throw new AppError(`This user is not found`,404)
+        user.isActive = false 
+        user.lastSeen = new Date()
+        await user.save({validateBeforeSave:false})
+        return `Logout is success`
     }
 }
 
