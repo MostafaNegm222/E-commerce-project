@@ -52,6 +52,13 @@ exports.resetPassword = catchAsync(async (req,res) => {
     })
 })
 
+exports.getMe = catchAsync((req,res) => {
+    res.status(200).json({
+        success : true ,
+        data : req.user
+    })
+})
+
 exports.logout = catchAsync(async (req,res) => {
     const message = await AuthService.logout(req.body._id)
     res.status(200).json({
