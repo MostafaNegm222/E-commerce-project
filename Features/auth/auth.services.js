@@ -19,8 +19,11 @@ class AuthService {
         const {email,name,password,phone=""} = data
         const userExisting = await this.findUser({email})
         if(userExisting) throw new AppError(`This email is already exist, please try another email`,400)
-        const user  = await User.create({email,name,image,phone,password})
-        sendEmail(user.email,'Confirm Email',user._plainOTP,user.name)
+        const OTP  = customAlphabet('0123456789',6)()
+        const OTPExpired = Date.now() + 10 * 60 * 1000
+        const confirmOTP = await bcrypt.hash(OTP,+process.env.SALT_ROUND)
+        const user  = await User.create({email,name,phone,password,confirmOTP,OTPExpired})
+        sendEmail(user.email,'Confirm Email',OTP,user.name)
         return user
     }
 

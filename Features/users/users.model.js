@@ -90,16 +90,15 @@ userSchema.methods.comparePassword = async function (data) {
 }
 
 userSchema.pre(/^find/, async function () {
-  this.find({ isDeleted: { $ne: true } });
+  const filter = this.getFilter();
+    if (filter.isDeleted === undefined) {
+        this.find({ isDeleted: { $ne: true } });
+    }
 });
 
 userSchema.pre("save", async function () {
     if(!this.isModified('password')) return;
     this.password = await bcrypt.hash(this.password,+process.env.SALT_ROUND)
-    const OTP  = customAlphabet('0123456789',6)()
-    this.confirmOTP = await bcrypt.hash(OTP,+process.env.SALT_ROUND)
-    this.OTPExpired = Date.now() + 10 * 60 * 1000
-    this._plainOTP = OTP;
 })
 
 const User = mongoose.model("User",userSchema)
