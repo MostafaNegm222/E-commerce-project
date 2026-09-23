@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
         minLength : [6,`Password must be 6 characters or more`],
         select : false
     },
+    googleId: {
+        type: String,
+        default: null
+    },
     image : {
         url : {
             type : String ,

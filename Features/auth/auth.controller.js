@@ -36,6 +36,16 @@ exports.login = catchAsync(async (req,res) => {
     })
 })
 
+exports.googleLogin = catchAsync(async (req, res) => {
+    const { idToken } = req.body;
+    const token = await AuthService.googleLogin(idToken);
+    
+    res.status(200).json({
+        success: true,
+        token,
+    });
+});
+
 exports.forgetPassword = catchAsync(async (req,res) => {
     const message = await AuthService.forgetPassword(req.body)
     res.status(200).json({
