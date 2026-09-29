@@ -6,6 +6,7 @@ const {promisify} = require("util")
 const AppError = require("../../utils/AppError")
 const User = require("../users/users.model")
 const sendEmail = require("../../utils/sendEmail")
+const { cloudinary } = require("../../config/cloudinary")
 
 const jwtSign = promisify(jwt.sign)
 
@@ -15,15 +16,36 @@ class AuthService {
         return User.findOne(filter)
     }
 
-    static async signup (data) {
+    static updateImage (file) {
+        if (!file) {
+            throw new AppError(`Please upload an image file`, 400)
+        }
+        return {
+            url : file.path ,
+            public_id : file.filename 
+        }
+    }
+
+    static async signup (data,file) {
         const {email,name,password,phone=""} = data
         const userExisting = await this.findUser({email})
         if(userExisting) throw new AppError(`This email is already exist, please try another email`,400)
         const OTP  = customAlphabet('0123456789',6)()
         const OTPExpired = Date.now() + 10 * 60 * 1000
         const confirmOTP = await bcrypt.hash(OTP,+process.env.SALT_ROUND)
-        const user  = await User.create({email,name,phone,password,confirmOTP,OTPExpired})
-        sendEmail(user.email,'Confirm Email',OTP,user.name)
+        const userData = {
+        email,
+        name,
+        password,
+        phone,
+        confirmOTP,
+        OTPExpired
+    };
+        if (file) {
+            userData.image = this.updateImage(file)
+        }
+        const user = await User.create(userData);
+        await sendEmail(user.email,'Confirm Email',OTP,user.name)
         return user
     }
 
@@ -109,13 +131,15 @@ class AuthService {
         const {password} = body 
         const userExisting = await this.findUser({resetToken:token})
         if(!userExisting || userExisting.resetTokenExpired < Date.now()) throw new AppError(`This token is invalid or Expired`,400)
-        if(password.length == 6) throw new AppError(`Password must be 6 characters or more`,400)
+        if(password.length < 6) throw new AppError(`Password must be 6 characters or more`,400)
         userExisting.password = password 
         userExisting.resetToken = undefined 
         userExisting.resetTokenExpired = undefined
         await userExisting.save({validateBeforeSave:false})
         return `Password reset successfully, Please login !`
     }
+
+    
 
     static async logout (userId) {
         const user = await this.findUser({_id:userId})

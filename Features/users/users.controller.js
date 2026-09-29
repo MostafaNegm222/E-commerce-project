@@ -1,68 +1,23 @@
 const catchAsync = require("../../utils/catchAsync");
+const AdminUsersService = require("./admin-users/admin-users.service");
 const UsersService = require("./users.services");
 
-
-exports.getAllUsers = catchAsync(async (req,res) => {
-    const {users , usersCount} = await UsersService.getAllUsers(req.query)
-    res.status(200).json({
-        success:true ,
-        usersCount,
-        data : users
-    })
-})
-
-exports.getDeletedUsers = catchAsync(async (req,res) => {
-    const {users,usersCount} = await UsersService.getDeletedUsers(req.query)
-    res.status(200).json({
-        success:true ,
-        usersCount,
-        data : users
-    })
-})
-
-exports.getOneUser = catchAsync(async (req,res) => {
-    const user = await UsersService.getOneUser()
+exports.updateProfile = catchAsync(async (req,res) => {
+    const data = await UsersService.updateProfile(req.user._id,req.body,req.file)
     res.status(200).json({
         success : true ,
-        data : user
+        data
     })
 })
 
-exports.createUser = catchAsync(async (req,res) => {
-    const user = await UsersService.createUser(req.body)
-    res.status(201).json({
-        success :true ,
-        message : `User is Created successfully`,
-        data : user
-    })
-})
-
-exports.updateUserRole = catchAsync(async (req,res) => {
-    const user = await UsersService.updateUserRole(req.params.id,req.body)
+exports.getMe = catchAsync((req,res) => {
     res.status(200).json({
         success : true ,
-        data : user
+        data : req.user
     })
 })
 
-exports.softDeleteUser = catchAsync(async (req,res) => {
-    const user = await UsersService.softDeleteUser(req.params.id)
-    res.status(200).json({
-        success : true ,
-        data : user
-    })
-})
-
-exports.restoreUser = catchAsync(async (req,res) => {
-    const user = await UsersService.restoreUser(req.params.id)
-    res.status(200).json({
-        success : true ,
-        data : user
-    })
-})
-
-exports.deleteUser = catchAsync(async (req,res) => {
-    await UsersService.deleteUser(req.params.id)
+exports.deleteAccount = catchAsync(async (req,res) => {
+    await AdminUsersService.deleteUser(req.user._id)
     res.status(204).send()
 })
-

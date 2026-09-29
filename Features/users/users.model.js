@@ -89,7 +89,7 @@ userSchema.methods.comparePassword = async function (data) {
     return await bcrypt.compare(data,this.password)
 }
 
-userSchema.pre(/^find/, async function () {
+userSchema.pre(/^find/,function () {
   const filter = this.getFilter();
     if (filter.isDeleted === undefined) {
         this.find({ isDeleted: { $ne: true } });

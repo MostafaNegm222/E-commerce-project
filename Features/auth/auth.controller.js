@@ -4,10 +4,10 @@ const AuthService = require("./auth.services");
 
 
 exports.signup = catchAsync(async (req,res) => {
-    const user = await AuthService.signup(req.body)
+    const user = await AuthService.signup(req.body,req.file)
     res.status(201).json({
         success : true ,
-        message : 'User is created successfully, Please check your email',
+        message : 'Account created successfully. Please check your email for activation OTP.',
         data : user
     })
 })
@@ -52,15 +52,9 @@ exports.resetPassword = catchAsync(async (req,res) => {
     })
 })
 
-exports.getMe = catchAsync((req,res) => {
-    res.status(200).json({
-        success : true ,
-        data : req.user
-    })
-})
 
 exports.logout = catchAsync(async (req,res) => {
-    const message = await AuthService.logout(req.body._id)
+    const message = await AuthService.logout(req.user._id)
     res.status(200).json({
         success : true ,
         message
