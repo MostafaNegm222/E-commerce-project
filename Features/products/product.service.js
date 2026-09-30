@@ -55,11 +55,40 @@ class ProductService {
   }
 
   static async getOneProduct(id) {
-    const product = await Product.findById(id).populate("category");
+    const product = await Product.findById(id).populate({
+    path: 'category',
+    select: 'name slug image.url',
+  });
     if (!product)
       throw new AppError(`No product found with this id ${id}`, 404);
     return product;
   }
+
+  static async getProductBySlug(slug) {
+  const product = await Product.findOne({ slug }).populate({
+    path: 'category',
+    select: 'name slug image.url',
+  });
+  
+  if (!product) {
+    throw new AppError(`Product not found with slug: ${slug}`, 404);
+  }
+  return product;
+}
+
+  static async getRelatedProducts(productId) {
+  const currentProduct = await Product.findById(productId);
+  if (!currentProduct) {
+    throw new AppError('Product not found', 404);
+  }
+  const relatedProducts = await Product.find({
+    category: currentProduct.category,
+    _id: { $ne: productId }, 
+  })
+    .limit(6) 
+    .select('title price coverImage ratingsAverage slug'); 
+  return relatedProducts;
+}
 
   static async createProduct(body, files) {
     if (!files || !files.coverImage) {
