@@ -51,18 +51,19 @@ class CategoryService {
   }
 
   static async updateCategory(id, body, file) {
+    const allowedUpdates = {};
+    if (body.name) allowedUpdates.name = body.name;
     const category = await Category.findById(id);
     if (!category) throw new AppError(`Category not found with ID: ${id}`, 404);
-    const updateData = { ...body };
     if (file) {
-      updateData.image = {
+      allowedUpdates.image = {
         url: file.path,
         public_id: file.filename,
       };
     }
 
     try {
-      const updatedCategory = await Category.findByIdAndUpdate(id, updateData, {
+      const updatedCategory = await Category.findByIdAndUpdate(id, allowedUpdates, {
         returnDocument: "after",
         runValidators: true,
       });

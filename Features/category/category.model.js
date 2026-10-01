@@ -44,6 +44,14 @@ categorySchema.pre(/^find/, function () {
   }
 });
 
+categorySchema.pre('findOneAndUpdate', function () {
+  const update = this.getUpdate();
+  const name = update?.name ?? update?.$set?.name;
+  if (name) {
+    this.set({ slug: slugify(name, { lower: true }) });
+  }
+});
+
 const Category = mongoose.model('Category', categorySchema);
 
 module.exports = Category;

@@ -102,10 +102,11 @@ class OrderService {
   }
 
   static async updateOrderStatus(orderId,body) {
-    const {state} = body;
+    const {status} = body;
+    if (!status) throw new AppError('Status is required', 400);
     const order = await Order.findById(orderId);
     if (!order) throw new AppError('Order not found', 404);
-    order.status = state;
+    order.status = status;
     const updatedOrder = await order.save();
     return updatedOrder;
   }
@@ -157,17 +158,24 @@ class OrderService {
     const shippingAddress = JSON.parse(session.metadata.shippingAddress);
     const userId = session.metadata.userId;
     const totalOrderPrice = session.amount_total / 100;
-
+    const stripeSessionId = session.id;
+    
+    const existingOrder = await Order.findOne({ stripeSessionId });
+      if (existingOrder) {
+        return existingOrder;
+      }
     const cart = await Cart.findById(cartId);
     const user = await User.findById(userId);
 
     if (!cart || !user) return;
+
 
     const order = await Order.create({
       user: userId,
       cartItems: cart.cartItems,
       shippingAddress,
       totalOrderPrice,
+      stripeSessionId,
       paymentMethodType: 'card',
       isPaid: true,
       paidAt: Date.now(),
