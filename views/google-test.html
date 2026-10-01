@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Login Test</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <h2>Google Sign-In Test for Postman</h2>
+    <div id="g_id_onload"
+         data-client_id="517924975768-hhajbmfqri2b9vmr0cn356vp5g2gqgn1.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+
+    <h3>Copy your ID Token:</h3>
+    <textarea id="tokenBox" rows="10" cols="80" readonly></textarea>
+
+    <script>
+        function handleCredentialResponse(response) {
+            document.getElementById("tokenBox").value = response.credential;
+            console.log("Encoded JWT ID token: " + response.credential);
+        }
+    </script>
+</body>
+</html>
