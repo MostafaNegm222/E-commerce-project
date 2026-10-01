@@ -22,14 +22,14 @@ const imageUpload = uploadTo("products").fields([
 ]);
 
 router.route("/").get(getAllProducts);
-router.route("/deleted-products").get(getDeletedProducts);
-router.route("/status").get(getStatus);
 router.get("/slug/:slug", getProductBySlug);
 router.route("/:id").get(getOneProduct);
 router.get("/:id/related", getRelatedProducts);
 
 router.use(auth, restrictTo("admin"));
 
+router.route("/admin/deleted-products").get(getDeletedProducts);
+router.route("/admin/status").get(getStatus);
 router.route("/").post(imageUpload, createProduct);
 router.route("/:id").patch(imageUpload, updateProduct).delete(deleteProduct);
 router.route("/:id/soft-delete").patch(softDeleteProduct);
