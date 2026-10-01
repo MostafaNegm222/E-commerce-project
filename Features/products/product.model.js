@@ -115,6 +115,15 @@ productSchema.pre(/^find/, function () {
     }
 })
 
+
+productSchema.pre('findOneAndUpdate', function () {
+  const update = this.getUpdate();
+  const title = update?.title ?? update?.$set?.title;
+  if (title) {
+    this.set({ slug: slugify(title, { lower: true }) });
+  }
+});
+
 const Product = mongoose.model('Product',productSchema)
 
 module.exports = Product

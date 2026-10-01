@@ -66,29 +66,33 @@ class CartService {
   }
 
   static async updateCartItemQuantity(userId, productId, quantity) {
-    const product = await Product.findById(productId);
-    if (!product) throw new AppError('Product not found', 404);
-
-    if (quantity > product.stock) {
-      throw new AppError(`Quantity exceeds available stock (${product.stock})`, 400);
-    }
-
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) throw new AppError('Cart not found', 404);
-
-    const itemIndex = cart.cartItems.findIndex(
-      (item) => item.product.toString() === productId
-    );
-
-    if (itemIndex === -1) {
-      throw new AppError('Item not found in cart', 404);
-    }
-
-    cart.cartItems[itemIndex].quantity = quantity;
-    await cart.save();
-
-    return cart;
+  const parsedQuantity = Number(quantity);
+  if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
+    throw new AppError('Quantity must be a positive integer', 400);
   }
+
+  const product = await Product.findById(productId);
+  if (!product) throw new AppError('Product not found', 404);
+
+  if (parsedQuantity > product.stock) {
+    throw new AppError(`Quantity exceeds available stock (${product.stock})`, 400);
+  }
+
+  const cart = await Cart.findOne({ user: userId });
+  if (!cart) throw new AppError('Cart not found', 404);
+
+  const itemIndex = cart.cartItems.findIndex(
+    (item) => item.product.toString() === productId
+  );
+
+  if (itemIndex === -1) {
+    throw new AppError('Item not found in cart', 404);
+  }
+
+  cart.cartItems[itemIndex].quantity = parsedQuantity;
+  await cart.save();
+  return cart;
+}
 
   static async removeCartItem(userId, productId) {
     const cart = await Cart.findOneAndUpdate(
