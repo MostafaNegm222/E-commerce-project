@@ -5,7 +5,7 @@ const restrictTo = require('../../middlewares/restrictTo');
 
 router.use(auth);
 
-router.post('/checkout-session', auth, orderController.getCheckoutSession);
+router.post('/checkout-session', orderController.getCheckoutSession);
 
 router.post('/checkout-cash', orderController.createCashOrder);
 router.get('/', orderController.getLoggedUserOrders);

@@ -1,17 +1,17 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'Order must belong to a user'],
+      ref: "User",
+      required: [true, "Order must belong to a user"],
     },
     cartItems: [
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
+          ref: "Product",
           required: true,
         },
         quantity: { type: Number, required: true },
@@ -21,15 +21,15 @@ const orderSchema = new mongoose.Schema(
       },
     ],
     shippingAddress: {
-      details: { type: String, required: [true, 'Street address is required'] },
-      phone: { type: String, required: [true, 'Phone number is required'] },
-      city: { type: String, required: [true, 'City is required'] },
+      details: { type: String, required: [true, "Street address is required"] },
+      phone: { type: String, required: [true, "Phone number is required"] },
+      city: { type: String, required: [true, "City is required"] },
       postalCode: String,
     },
     paymentMethodType: {
       type: String,
-      enum: ['card', 'cash'],
-      default: 'cash',
+      enum: ["card", "cash"],
+      default: "cash",
     },
     isPaid: {
       type: Boolean,
@@ -55,26 +55,31 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-      default: 'pending',
+      enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+      default: "pending",
+    },
+    stripeSessionId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
   },
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 orderSchema.pre(/^find/, function () {
   this.populate({
-    path: 'user',
-    select: 'name email phone',
+    path: "user",
+    select: "name email phone",
   }).populate({
-    path: 'cartItems.product',
-    select: 'title coverImage slug',
+    path: "cartItems.product",
+    select: "title coverImage slug",
   });
 });
 
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.model("Order", orderSchema);
 
 module.exports = Order;
