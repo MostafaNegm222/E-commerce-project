@@ -1,5 +1,15 @@
 const mongoose = require("mongoose")
 const slugify = require("slugify")
+
+
+const imageSchema = new mongoose.Schema(
+  {
+    url: { type: String, required: true },
+    public_id: { type: String, required: true },
+  },
+  { _id: false }
+);
+
 const productSchema = new mongoose.Schema({
     title : {
         type : String ,
@@ -15,6 +25,7 @@ const productSchema = new mongoose.Schema({
         index : true
     },
     description : {
+        type : String,
         required : [true , "Product description is required"] ,
         trim : true ,
         minLength : [20,'Product description must be 20 characters or more'],
@@ -53,12 +64,7 @@ const productSchema = new mongoose.Schema({
         required: [true, 'Cover image public_id is required'],
       },
     },
-    images: [
-      {
-        url: { type: String, required: true },
-        public_id: { type: String, required: true },
-      },
-    ],
+    images: [imageSchema],
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
@@ -96,19 +102,17 @@ const productSchema = new mongoose.Schema({
 productSchema.index({price:1,ratingsAverage:-1})
 productSchema.index({title:"text",description:"text"})
 
-productSchema.pre("save" , function (next) {
+productSchema.pre("save" , function () {
     if (this.isModified("title")) {
         this.slug = slugify(this.title,{lower:true})
     }
-    next()
 })
 
-productSchema.pre(/^find/,function (next) {
+productSchema.pre(/^find/, function () {
     const filter = this.getFilter()
     if (filter.isDeleted === undefined) {
         this.find({isDeleted : {$ne : true}})
     }
-    next()
 })
 
 const Product = mongoose.model('Product',productSchema)

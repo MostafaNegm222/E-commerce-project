@@ -1,7 +1,7 @@
 const { uploadTo } = require("../../config/cloudinary")
 const auth = require("../../middlewares/authMiddleware")
 const { getMe, updateProfile, deleteAccount } = require("../users/users.controller")
-const { signup, confirmEmail, resendOTP, login, forgetPassword, resetPassword, logout} = require("./auth.controller")
+const { signup, confirmEmail, resendOTP, login, forgetPassword, resetPassword, logout, googleLogin} = require("./auth.controller")
 
 const router = require("express").Router()
 
@@ -13,6 +13,7 @@ router.route("/signup").post(uploadTo('users').single("image"),signup)
 router.route("/confirm-email").post(confirmEmail)
 router.route("/resend-otp").post(resendOTP)
 router.route("/login").post(login)
+router.post("/google", googleLogin);
 router.route("/forget-password").post(forgetPassword)
 router.route("/reset-password/:token").post(resetPassword)
 

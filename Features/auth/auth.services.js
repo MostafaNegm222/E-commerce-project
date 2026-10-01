@@ -6,7 +6,9 @@ const {promisify} = require("util")
 const AppError = require("../../utils/AppError")
 const User = require("../users/users.model")
 const sendEmail = require("../../utils/sendEmail")
-const { cloudinary } = require("../../config/cloudinary")
+const { OAuth2Client } = require("google-auth-library")
+const client = new OAuth2Client(process.env.CLIENT_ID)
+
 
 const jwtSign = promisify(jwt.sign)
 
@@ -110,6 +112,32 @@ class AuthService {
         userExisting.isActive = true 
         userExisting.lastSeen = new Date()
         await userExisting.save({validateBeforeSave : false})
+        return token
+    }
+
+    static async googleLogin (idToken) {
+        if (!idToken) throw new AppError(`Google Id token is required`,400)
+        const ticket = await client.verifyIdToken({idToken,audience:process.env.CLIENT_ID})
+        const payload = ticket.getPayload()
+        const {email,name,picture,sub:googleId} = payload
+        let user = await this.findUser({email})
+        if(!user) {
+            user = await User.create({
+                name,
+                email,
+                image : {
+                    url:picture,
+                    public_id:null
+                },
+                googleId ,
+                isConfirmed:true,
+                password : Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8)
+            })
+        }
+        const token = await jwtSign({_id:user._id,role:user.role},process.env.SECRET_KEY,{"expiresIn":"7d"})
+        user.isActive = true 
+        user.lastSeen = new Date()
+        await user.save({validateBeforeSave:false})
         return token
     }
 
