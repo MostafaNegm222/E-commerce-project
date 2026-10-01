@@ -1,5 +1,5 @@
 const Cart = require('./cart.model');
-const Product = require('../products/products.model');
+const Product = require('../products/product.model');
 const AppError = require('../../utils/AppError');
 
 class CartService {

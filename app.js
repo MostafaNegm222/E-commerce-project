@@ -10,6 +10,7 @@ const authRouter = require("./Features/auth/auth.route")
 const usersRouter = require("./Features/users/users.route")
 const productRouter = require("./Features/products/product.route")
 const categoryRouter = require("./Features/category/category.route")
+const cartRouter = require("./Features/cart/cart.route")
 setServers(['8.8.8.8','8.8.4.4'])
 
 const app = express()
@@ -45,6 +46,7 @@ app.use('/auth',authRouter)
 app.use('/users',usersRouter)
 app.use('/products',productRouter)
 app.use('/category',categoryRouter)
+app.use('/cart',cartRouter)
 
 app.use((req,res) => {
     res.status(404).json({
