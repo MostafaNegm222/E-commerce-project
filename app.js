@@ -11,6 +11,9 @@ const usersRouter = require("./Features/users/users.route")
 const productRouter = require("./Features/products/product.route")
 const categoryRouter = require("./Features/category/category.route")
 const cartRouter = require("./Features/cart/cart.route")
+const orderRouter = require("./Features/order/order.route")
+
+const orderController = require('./Features/order/order.controller');
 setServers(['8.8.8.8','8.8.4.4'])
 
 const app = express()
@@ -25,6 +28,12 @@ const authLimiter = limiter.rateLimit({
     windowMs : 3 * 60 * 1000 ,
     limit : 5
 })
+
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  orderController.webhookCheckout
+);
 
 app.use(express.json())
 app.use(cors({
@@ -47,6 +56,7 @@ app.use('/users',usersRouter)
 app.use('/products',productRouter)
 app.use('/category',categoryRouter)
 app.use('/cart',cartRouter)
+app.use('/order',orderRouter)
 
 app.use((req,res) => {
     res.status(404).json({
