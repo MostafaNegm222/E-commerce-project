@@ -13,5 +13,5 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm ci
-      - run: npm test # يفرض وجود سكريبت test في package.json
+      - run: npm install
+      - run: npm test
