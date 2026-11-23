@@ -43,8 +43,8 @@ class ApiFeatures {
 
     fields () {
          if (this.queryStr.fields) {
-            const fields = this.queryStr.select.replaceAll("," , " ")
-            this.query = this.query.sort(fields)
+            const fields = this.queryStr.fields.replaceAll("," , " ")
+            this.query = this.query.select(fields)
         }else {
             this.query = this.query.select("-__v")
         }
@@ -52,8 +52,8 @@ class ApiFeatures {
     }
 
     pagination () {
-        let page = this.queryStr.page || 1
-        let limit = this.queryStr.limit || 1
+        let page = Number(this.queryStr.page) || 1
+        let limit = Number(this.queryStr.limit) || 10
         let skip = (page - 1) * limit
         this.query = this.query.skip(skip).limit(limit)
         return this
