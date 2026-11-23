@@ -64,10 +64,8 @@ Open `http://localhost:5000/` (or your `PORT`) and you should get a welcome mess
 npm test
 ```
 
-21 Jest unit tests cover the query builder, the auth and role middleware, the global error handler, `AppError` and `catchAsync`, and the cart service rules (product not found, out of stock, discount price, stock limit). Models are mocked, so no database is needed.
+23 Jest unit tests cover the query builder, the auth and role middleware, the global error handler, `AppError` and `catchAsync`, and the cart service rules (product not found, out of stock, discount price, stock limit). Models are mocked, so no database is needed.
 
 ## Known gaps
 
 - Controllers and the Stripe, Cloudinary and email integrations are not covered by tests.
-- In `utils/ApiFeatures.js`, the `fields` option (field selection) and the default page size are rough edges and are not tested.
-- The workflow file lives in `github/workflows/`, not `.github/workflows/`, so GitHub does not run it yet.
