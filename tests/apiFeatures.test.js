@@ -59,6 +59,23 @@ describe("ApiFeatures.sort, fields and pagination", () => {
     expect(last(q, "select")).toBe("-__v");
   });
 
+  test("selects the requested fields, comma list turned into a space list", () => {
+    const q = fakeQuery();
+    new ApiFeatures(q, { fields: "name,price" }).fields();
+    expect(last(q, "select")).toBe("name price");
+  });
+
+  test("defaults to page 1 and 10 items, and reads string values from the query string", () => {
+    const a = fakeQuery();
+    new ApiFeatures(a, {}).pagination();
+    expect(last(a, "skip")).toBe(0);
+    expect(last(a, "limit")).toBe(10);
+    const b = fakeQuery();
+    new ApiFeatures(b, { page: "2", limit: "4" }).pagination();
+    expect(last(b, "skip")).toBe(4);
+    expect(last(b, "limit")).toBe(4);
+  });
+
   test("computes skip from page and limit", () => {
     const q = fakeQuery();
     new ApiFeatures(q, { page: 3, limit: 5 }).pagination();
