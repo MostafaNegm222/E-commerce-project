@@ -1,71 +1,70 @@
 # E-Commerce API
 
-The back end of an online store, built with Node.js, Express and MongoDB. It handles accounts (including Google sign-in), a product catalogue with images, categories, shopping carts, and orders paid by card with Stripe or cash on delivery. Admin routes are protected by role.
+## 1. Description
 
-## What it does
+The back end of an online store, built with Node.js, Express and MongoDB. It handles the full shopping flow: accounts (including Google sign-in), a product catalogue with images, categories, a shopping cart, and orders paid by card with Stripe or cash on delivery. Admin routes are protected by role.
 
-**Accounts (`/auth`)**
-- Sign up with profile image upload (Cloudinary), email confirmation with a one-time code, resend code, login, logout.
-- Google sign-in with an ID token (`POST /auth/google`).
-- Forgot and reset password by email.
-- `GET/PATCH/DELETE /auth/me` for the logged-in user's own profile.
-- Sign-in routes are rate limited to 5 requests per 3 minutes.
+## 2. Technologies and Versions
 
-**Products (`/products`)**
-- Public: list with filtering (`gt`, `gte`, `lt`, `lte`), search, sort and pagination, get by id or slug, related products.
-- Admin: create and update with a cover image and up to 5 more images, soft delete, permanent delete, list deleted products, product statistics.
+- Node.js with Express ^5.2.1
+- MongoDB with Mongoose ^9.10.1
+- JWT ^9.0.3 (auth), bcryptjs ^3.0.3 (password hashing), google-auth-library ^11.1.0 (Google sign-in)
+- Stripe ^22.6.2 (card checkout, EGP)
+- Multer ^2.4.0 with multer-storage-cloudinary ^4.0.0 and Cloudinary ^1.41.3 (image upload)
+- Nodemailer ^10.0.10 (email), slugify ^1.6.9, nanoid ^3.3.19
+- Helmet ^8.3.0, express-rate-limit ^8.7.0, cors ^2.8.6, morgan ^1.12.1, dotenv ^18.0.1
+- Jest ^30.5.2 (tests), nodemon ^3.1.14 (dev)
 
-**Categories (`/category`)** public read, admin create, update, soft delete and delete with image upload.
+## 3. Requirements and Dependencies
 
-**Cart (`/cart`)** get, add a product (with colour and size), change quantity, remove an item, clear. Checks stock and uses the discounted price when a product has one.
+- Node.js installed
+- A MongoDB database (local or Atlas)
+- Cloudinary, Stripe and SMTP credentials for the related features
+- Dependencies are installed with `npm install` (see `package.json`)
 
-**Orders (`/order`)**
-- Cash order from the cart, or a Stripe Checkout session (currency EGP). A Stripe webhook (`/webhook-checkout`) creates the paid order.
-- Users see their own orders. Admins mark orders paid, delivered, or set the status.
-
-**Admin users (`/users`)** list, create, view, change role, soft delete, restore and delete users.
-
-**General** Helmet, CORS, request logging, a global rate limit of 100 requests per 15 minutes, a global error handler, and a 404 response for unknown routes.
-
-## Tech stack
-
-Node.js, Express 5, MongoDB with Mongoose 9, JWT, bcryptjs, Google Auth Library, Stripe, Multer with Cloudinary, Nodemailer, Helmet, express-rate-limit, slugify, nanoid. Tests use Jest.
-
-## Project structure
-
-```
-├── api/index.js     # Entry point (connects to MongoDB, starts the server)
-├── app.js           # Express app: middleware and routes
-├── Features/        # One folder per feature: route, controller, service, model
-│   ├── auth  users  products  category  cart  order
-├── middlewares/     # auth, restrictTo, global error handler
-├── utils/           # ApiFeatures (query builder), AppError, catchAsync, email helpers
-├── config/          # MongoDB and Cloudinary
-└── tests/           # Jest unit tests
-```
-
-## Run it locally
-
-You need Node.js and a MongoDB database (a local one or Atlas).
+## 4. Installation and Run Steps
 
 ```bash
+git clone https://github.com/MostafaNegm222/E-commerce-project.git
+cd E-commerce-project
 npm install
-cp .env.example .env     # then fill in the values
-npm start                # nodemon api/index.js
+cp .env.example .env   # then fill in the values (see section 5)
+npm start              # nodemon api/index.js
 ```
 
-Variables read by the code: `PORT`, `PRODUCTION_DATABASE_LINK` (the MongoDB connection string used by `config/connectDB.js`), `SALT_ROUND`, `SECRET_KEY` (JWT), `USER_EMAIL` and `USER_PASS` (mail account), `FRONTEND_LINK`, `NODE_ENV`, `CLOUDINARY_CLOUD`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLIENT_ID` (Google), `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. `.env.example` lists most of them, so add the Google and Stripe ones yourself.
+## 5. Environment Variables
 
-Open `http://localhost:5000/` (or your `PORT`) and you should get a welcome message.
+Listed in `.env.example` (no secrets are stored in the repo):
 
-## Tests
+| Variable | Purpose |
+| --- | --- |
+| `PORT` | Port the API listens on |
+| `LOCAL_DATABASE_LINK` / `PRODUCTION_DATABASE_LINK` | MongoDB connection strings |
+| `NODE_ENV` | Environment switch (development / production) |
+| `SALT_ROUND` | bcrypt salt rounds |
+| `SECRET_KEY` | Secret used to sign JWTs |
+| `USER_EMAIL`, `USER_PASS` | SMTP account for outgoing email |
+| `FRONTEND_LINK` | Allowed CORS origin (the storefront URL) |
+| `CLOUDINARY_CLOUD`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Cloudinary image storage |
+
+## 6. Usage and Main Features
+
+- **Accounts (`/auth`)**: sign up with profile image upload (Cloudinary), email confirmation with a one-time code, resend code, login, logout, Google sign-in with an ID token, forgot/reset password by email, and `GET/PATCH/DELETE /auth/me` for the logged-in user's profile. Sign-in routes are rate limited to 5 requests per 3 minutes.
+- **Products (`/products`)**: public list with filtering (`gt`, `gte`, `lt`, `lte`), search, sort and pagination; get by id or slug; related products. Admin: create and update with a cover image and up to 5 more images, soft delete, permanent delete, list deleted products, product statistics.
+- **Categories (`/category`)**: public read; admin create, update, soft delete and delete with image upload.
+- **Cart (`/cart`)**: get, add a product (with colour and size), change quantity, remove an item, clear. Checks stock and uses the discounted price when a product has one.
+- **Orders (`/order`)**: cash order from the cart, or a Stripe Checkout session (currency EGP); a Stripe webhook (`/webhook-checkout`) creates the paid order. Users see their own orders; admins mark orders paid, delivered, or set the status.
+- **Admin users (`/users`)**: list, create, view, change role, soft delete, restore and delete users.
+- **General**: Helmet, CORS, request logging, global rate limit of 100 requests per 15 minutes, one global error handler, and a 404 response for unknown routes. Code is organized one folder per feature under `Features/` (route, controller, service, model).
+
+## 7. Screenshots / Demo
+
+No live demo; the API runs locally.
+
+## 8. Running Tests
 
 ```bash
 npm test
 ```
 
-23 Jest unit tests cover the query builder, the auth and role middleware, the global error handler, `AppError` and `catchAsync`, and the cart service rules (product not found, out of stock, discount price, stock limit). Models are mocked, so no database is needed.
-
-## Known gaps
-
-- Controllers and the Stripe, Cloudinary and email integrations are not covered by tests.
+Jest unit tests live in `tests/`.
